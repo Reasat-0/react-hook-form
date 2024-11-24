@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { SubmitHandler, useFieldArray, useForm } from "react-hook-form";
 
 const YoutubeForm = () => {
   const form = useForm<FormValuesType>({
@@ -14,22 +14,19 @@ const YoutubeForm = () => {
         twitter: "",
       },
       phoneNumbers: [""],
+      coTravelers: [
+        {
+          name: "",
+          age: null,
+        },
+      ],
     },
-    // We can set default value from an async request.... Like below
-    // defaultValues: async () => {
-    //   const response = await fetch(
-    //     "https://jsonplaceholder.typicode.com/users/2"
-    //   );
-    //   const data = await response.json();
-    //   console.log(data);
-    //   return {
-    //     name: "",
-    //     email: data?.email,
-    //     channel: "",
-    //   };
-    // },
   });
-  const { register, handleSubmit, formState } = form;
+  const { register, handleSubmit, formState, control } = form;
+  const { fields, append, remove } = useFieldArray({
+    name: "coTravelers",
+    control,
+  });
 
   type FormValuesType = {
     name: string;
@@ -40,6 +37,10 @@ const YoutubeForm = () => {
       twitter: string;
     };
     phoneNumbers: string[];
+    coTravelers: {
+      name: string;
+      age: number | null;
+    }[];
   };
 
   const { errors } = formState;
@@ -148,6 +149,55 @@ const YoutubeForm = () => {
             {...register("phoneNumbers.1")}
           />
         </div>
+
+        {fields.map((field, idx) => {
+          return (
+            <div
+              key={field.id}
+              className="flex gap-2 p-2 border border-gray-400 relative"
+            >
+              <div className="">
+                <label className="">Traveler {idx + 1} Name </label>
+                <input
+                  className="w-full"
+                  type="text"
+                  {...register(`coTravelers.${idx}.name`, {
+                    required: { value: true, message: "Field Reqired..." },
+                  })}
+                />
+              </div>
+              <div className="">
+                <label className="">Traveler {idx + 1} age</label>
+                <input
+                  className="w-full"
+                  type="text"
+                  {...register(`coTravelers.${idx}.age`, {
+                    required: { value: true, message: "Field Reqired..." },
+                  })}
+                />
+              </div>
+              {idx > 0 && (
+                <button
+                  type="button"
+                  className="text-white bg-red-600 w-[20px] h-[20px] flex items-center justify-center absolute top-[-10px] right-[-10px] rounded-full p-3"
+                  onClick={() => remove(idx)}
+                >
+                  {" "}
+                  X{" "}
+                </button>
+              )}
+            </div>
+          );
+        })}
+
+        <button
+          type="button"
+          className="bg-blue-500 rounded-md text-white px-2 py-1"
+          onClick={() => append({ name: "", age: null })}
+        >
+          {" "}
+          Add Co Travlers
+        </button>
         <button className="px-2 py-3 bg-green-600 rounded-md" type="submit">
           Submit
         </button>
